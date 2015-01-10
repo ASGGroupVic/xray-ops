@@ -1,31 +1,14 @@
 ---
 
-- hosts: coreos
+- hosts: cluster
   gather_facts: False
   roles:
-    - defunctzombie.coreos-bootstrap
-  tasks:
-    - name: Install httplib2 for uri module
-      pip: name=httplib2
+    - coreos
+  tags:
+    - bootstrap
 
-
-- hosts: 127.0.0.1
-  connection: local
-  gather_facts: false
-  tasks:
-    - name: Get etcd discovery token for cluster
-      uri: url=https://discovery.etcd.io/new return_content=yes
-      register: etcd_discovery_token
-
-
-- hosts: coreos
-  vars:
-    # Overriden for vagrant core-os
-    cloud_config_path: /var/lib/coreos/user-data
-    etcd_discovery_token_uri: "{{ hostvars['127.0.0.1']['etcd_discovery_token'].content }}"
-
-  tasks:
-    - name: Push cloud-info to remotes with new discovery token
-      template: src=core-os/cloud-config.yml.j2 dest={{cloud_config_path}}
-                group=core owner=core mode=0644
-      sudo: yes
+- hosts: cluster
+  roles:
+    - kubernetes
+  tags:
+    - kubernetes
