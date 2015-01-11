@@ -1,3 +1,9 @@
+[kube_master]
+core-01
+
+[kube_minions]
+core-[01:03]
+
 [cluster:vars]
 ansible_ssh_user=core
 ansible_python_interpreter="PATH=/home/core/bin:$PATH python"
