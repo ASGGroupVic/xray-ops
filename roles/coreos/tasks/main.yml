@@ -1,9 +1,0 @@
----
-
-- name: Get etcd discovery token for cluster
-  run_once: true
-  local_action: uri url=https://discovery.etcd.io/new return_content=yes
-  register: etcd_discovery_token
-  # We're assuming the if the cluster has been bootstrapped then a new
-  # token for etcd is needed
-  when: need_bootstrap|failed

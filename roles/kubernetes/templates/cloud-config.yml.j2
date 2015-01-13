@@ -1,37 +1,10 @@
 #cloud-config
 
-write_files:
-  - path: /etc/weave.core-01.env
-    permissions: 0644
-    owner: root
-    content: |
-      WEAVE_LAUCH_ARGS=""
-      BRIDGE_ADDRESS_CIDR="10.9.1.1/24"
-      BREAKOUT_ROUTE="10.9.0.0/16"
-      CONTAINER_INTERFACE="eth0"
-
-  - path: /etc/weave.core-02.env
-    permissions: 0644
-    owner: root
-    content: |
-      WEAVE_LAUCH_ARGS="172.17.8.101"
-      BRIDGE_ADDRESS_CIDR="10.9.2.1/24"
-      BREAKOUT_ROUTE="10.9.0.0/16"
-      CONTAINER_INTERFACE="eth0"
-
-  - path: /etc/weave.core-03.env
-    permissions: 0644
-    owner: root
-    content: |
-      WEAVE_LAUCH_ARGS="172.17.8.101"
-      BRIDGE_ADDRESS_CIDR="10.9.3.1/24"
-      BREAKOUT_ROUTE="10.9.0.0/16"
-      CONTAINER_INTERFACE="eth0"
-
 coreos:
   update:
     group: alpha
     reboot-strategy: 'off'
+
   etcd:
     addr: $public_ipv4:4001
     bind-addr: 0.0.0.0
@@ -39,23 +12,11 @@ coreos:
     peer-heartbeat-interval: 250
     peer-election-timeout: 1000
     discovery: {{ etcd_discovery_token.content }}
+
   units:
     - name: etcd.service
       command: start
 
-    - name: weave-network.target
-      enable: true
-      content: |
-        [Unit]
-        Description=Weave Network Setup Complete
-        Documentation=man:systemd.special(7)
-        RefuseManualStart=no
-        After=network-online.target
-
-        [Install]
-        WantedBy=multi-user.target
-        WantedBy=kubernetes-master.target
-        WantedBy=kubernetes-minion.target
 
     - name: kubernetes-master.target
       enable: true
@@ -65,6 +26,8 @@ coreos:
         Description=Kubernetes Cluster Master
         Documentation=http://kubernetes.io/
         RefuseManualStart=no
+        #####
+        ##### WEAVE
         After=weave-network.target
         Requires=weave-network.target
         ConditionHost=core-01
@@ -75,6 +38,7 @@ coreos:
         [Install]
         WantedBy=multi-user.target
 
+
     - name: kubernetes-minion.target
       enable: true
       command: start
@@ -83,6 +47,8 @@ coreos:
         Description=Kubernetes Cluster Minion
         Documentation=http://kubernetes.io/
         RefuseManualStart=no
+        #####
+        ##### WEAVE
         After=weave-network.target
         Requires=weave-network.target
         Wants=proxy.service
@@ -91,77 +57,6 @@ coreos:
         [Install]
         WantedBy=multi-user.target
 
-    - name: 10-weave.network
-      runtime: false
-      content: |
-        [Match]
-        Type=bridge
-        Name=weave*
-
-        [Network]
-
-    - name: install-weave.service
-      enable: true
-      content: |
-        [Unit]
-        After=network-online.target
-        Before=weave.service
-        Before=weave-helper.service
-        Before=docker.service
-        Description=Install Weave
-        Documentation=http://zettio.github.io/weave/
-        Requires=network-online.target
-
-        [Service]
-        Type=oneshot
-        RemainAfterExit=yes
-        ExecStartPre=/usr/bin/wget -N -P /opt/bin https://raw.github.com/errordeveloper/weave-demos/master/poseidon/weave
-        ExecStartPre=/usr/bin/chmod +x /opt/bin/weave
-        ExecStart=/bin/echo Weave Installed
-
-        [Install]
-        WantedBy=weave-network.target
-        WantedBy=weave.service
-
-    - name: weave-helper.service
-      enable: true
-      content: |
-        [Unit]
-        After=install-weave.service
-        After=docker.service
-        Description=Weave Network Router
-        Documentation=http://zettio.github.io/weave/
-        Requires=docker.service
-        Requires=install-weave.service
-
-        [Service]
-        EnvironmentFile=/etc/weave.%H.env
-        ExecStart=/opt/bin/weave helper $CONTAINER_INTERFACE $BREAKOUT_ROUTE
-
-        [Install]
-        WantedBy=weave-network.target
-
-    - name: weave.service
-      enable: true
-      content: |
-        [Unit]
-        After=install-weave.service
-        After=docker.service
-        Description=Weave Network Router
-        Documentation=http://zettio.github.io/weave/
-        Requires=docker.service
-        Requires=install-weave.service
-
-        [Service]
-        EnvironmentFile=/etc/weave.%H.env
-        ExecStartPre=/usr/bin/docker pull zettio/weave:latest
-        ExecStartPre=/opt/bin/weave launch $WEAVE_LAUCH_ARGS
-        ExecStart=/usr/bin/docker logs -f weave
-        SuccessExitStatus=2
-        ExecStop=/opt/bin/weave stop
-
-        [Install]
-        WantedBy=weave-network.target
 
     - name: docker.service
       enable: true
@@ -175,6 +70,8 @@ coreos:
         Requires=network.target
         Requires=install-weave.service
 
+        #####
+        ##### WEAVE
         [Service]
         EnvironmentFile=/etc/weave.%H.env
         ExecStartPre=/bin/mount --make-rprivate /
@@ -204,6 +101,8 @@ coreos:
 
         [Service]
         ExecStartPre=/bin/mkdir -p /opt/
+        #####
+        ##### URL
         ExecStart=/bin/bash -c "curl -s -L 'https://github.com/errordeveloper/weave-demos/releases/download/kube-blog-post-1/kube-v0.7.1.txz' | tar xJv -C /opt/"
         ExecStartPost=/bin/ln -s -f /opt/guestbook-example /home/core/
         RemainAfterExit=yes
@@ -212,6 +111,7 @@ coreos:
         [Install]
         WantedBy=kubernetes-master.target
         WantedBy=kubernetes-minion.target
+
 
     - name: apiserver.service
       enable: true
@@ -226,6 +126,8 @@ coreos:
         Documentation=https://github.com/GoogleCloudPlatform/kubernetes
         Wants=etcd.service
         Wants=download-kubernetes.service
+        #####
+        ##### Host
         ConditionHost=core-01
 
         [Service]
@@ -242,6 +144,7 @@ coreos:
         [Install]
         WantedBy=kubernetes-master.target
 
+
     - name: scheduler.service
       enable: true
       content: |
@@ -252,6 +155,8 @@ coreos:
         Description=Kubernetes Scheduler
         Documentation=https://github.com/GoogleCloudPlatform/kubernetes
         Wants=apiserver.service
+        #####
+        ##### Host
         ConditionHost=core-01
 
         [Service]
@@ -263,6 +168,7 @@ coreos:
 
         [Install]
         WantedBy=kubernetes-master.target
+
 
     - name: controller-manager.service
       enable: true
@@ -277,6 +183,8 @@ coreos:
         Wants=apiserver.service
         Wants=etcd.service
         Wants=download-kubernetes.service
+        #####
+        ##### Host
         ConditionHost=core-01
 
         [Service]
@@ -291,6 +199,7 @@ coreos:
 
         [Install]
         WantedBy=kubernetes-master.target
+
 
     - name: kubelet.service
       content: |
@@ -315,6 +224,7 @@ coreos:
 
         [Install]
         WantedBy=kubernetes-minion.target
+
 
     - name: proxy.service
       content: |

@@ -1,6 +1,16 @@
 ---
 
-- name: Push cloud-config to remotes with new discovery token
+  # Note: This creates an external dependancy and requires HTTPS outbound for local and remote instances
+- name: Get etcd discovery token for cluster
+  run_once: true
+  local_action: uri url=https://discovery.etcd.io/new return_content=yes
+  register: etcd_discovery_token
+  # We're assuming the if the cluster has been bootstrapped then a new
+  # token for etcd is needed
+  when: need_bootstrap|failed
+
+
+- name: Push cloud-config to remotes (with new discovery token)
   template: src=cloud-config.yml.j2 dest={{coreos_cloud_config_path}}
             group=core owner=core mode=0644
   sudo: yes

@@ -27,6 +27,8 @@ vagrant_ssh_config.each do |line|
     inventory[:_meta][:hostvars][host] = {}
   when /^\s+Port\s(\d+)$/
     inventory[:_meta][:hostvars][host]['ansible_ssh_port'] = $1
+  when /^\s+User\s(\d+)$/
+    inventory[:_meta][:hostvars][host]['ansible_ssh_user'] = $1
   when /^\s+IdentityFile\s(.+)$/
     inventory[:_meta][:hostvars][host]['ansible_ssh_private_key_file'] = $1
   end
