@@ -36,26 +36,26 @@ Vagrant.configure(VAGRANT_API_VERSION) do |config|
     config.vbguest.auto_update = false
   end
 
-  config.vm.define vm_name = "master" do |machine|
-    machine.vm.hostname = vm_name
+  config.vm.define vm_name = "master" do |master|
+    master.vm.hostname = "master"
 
-    machine.vm.provider :vmware_fusion do |vb|
+    master.vm.provider :vmware_fusion do |vb|
       vb.gui = $vb_gui
     end
 
-    machine.vm.provider :virtualbox do |vb|
+    master.vm.provider :virtualbox do |vb|
       vb.gui = $vb_gui
       vb.memory = $vb_memory
       vb.cpus = $vb_cpus
     end
 
-    machine.vm.network :private_network, ip: $master_ip
+    master.vm.network :private_network, ip: $master_ip
   end
 
 
   (1..$num_minions).each do |instance|
     config.vm.define vm_name = "minion-%d" % instance do |machine|
-      machine.vm.hostname = vm_name
+      machine.vm.hostname = "minion-%d" % instance
 
       machine.vm.provider :vmware_fusion do |vb|
         vb.gui = $vb_gui
