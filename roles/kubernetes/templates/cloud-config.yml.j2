@@ -11,7 +11,7 @@ coreos:
     peer-addr: $public_ipv4:7001
     peer-heartbeat-interval: 250
     peer-election-timeout: 1000
-    discovery: {{ etcd_discovery_token.content }}
+    discovery: {{ etcd_discovery_url }}
 
   units:
     - name: etcd.service

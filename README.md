@@ -1,7 +1,8 @@
 # Local Development
 
 Depends on vagrant and ansible.
-* Install python
+* Install python and pip
+* Install httplib2 (sudo pip install httplib2)
 * Install vagrant and virtualbox
 * Install ansible
 

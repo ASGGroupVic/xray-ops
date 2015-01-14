@@ -5,24 +5,20 @@
   roles:
     - coreos
 
+# If an existing etcd cluster exists then any changes to the etcd_cluster group
+# should probably use the same etcd discovery url. Pass etcd_discovery_url as
+# an extra var or a new etcd service will form an independent cluster.
 - hosts: etcd_cluster
   vars:
-    # This ugly looking construct builds a comma-separated list of the ip addresses of the external interface for each peers in the etcd cluster.
-    etcd_peers: "{% macro hosts() -%}{% for host in groups['etcd_cluster'] %},{{ hostvars[host]['ansible_'+hostvars[host]['external_iface']]['ipv4']['address'] }}{% endfor %}{%- endmacro %}{{ hosts()|replace(',', '', 1) }}"
-  tasks:
-    - name: debug variables
-      run_once: true
-      local_action: debug var=etcd_peers
-      # local_action: debug var=group_names
-      # local_action: debug msg="cluster"
-      # local_action: debug var=groups['cluster']
+    new_cluster: need_bootstrap|failed
+  roles:
+    - etcd_discovery
 
-# - hosts: etcd_cluster
-#   vars:
-#     # etcd_peer_addr: hostvars[]
-#     etcd_peers: "{{ groups['etcd']|map(attribute='ansible_eth0.ipv4.address')|join(',') }}"
-#   roles:
-#     - etcd
+- hosts: etcd_cluster
+  roles:
+    - etcd
+
+
 #
 # - hosts: k8s_cluster
 #   roles:

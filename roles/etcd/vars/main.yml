@@ -1,0 +1,2 @@
+---
+etcd_discovery_url: "{{ etcd_discovery_token.content|default('') }}"
