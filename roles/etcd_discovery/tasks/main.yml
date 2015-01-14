@@ -1,4 +1,5 @@
 ---
+
 # Note: This is an external dependancy and requires HTTPS outbound for local and remote instances
 # We're assuming the if the cluster has been bootstrapped then a new
 # token for etcd is needed, unless an extra_var has been provided
@@ -6,4 +7,4 @@
   run_once: true
   local_action: uri url=https://discovery.etcd.io/new return_content=yes
   register: etcd_discovery_token
-  when: etcd_discovery_url is not defined and new_cluster
+  when: new_cluster==true and etcd_discovery_url==''

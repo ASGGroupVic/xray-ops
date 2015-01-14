@@ -10,7 +10,8 @@
 # an extra var or a new etcd service will form an independent cluster.
 - hosts: etcd_cluster
   vars:
-    new_cluster: need_bootstrap|failed
+    # need_bootstrap is registered by the coreos role.
+    new_cluster: "{{need_bootstrap.rc > 0}}"
   roles:
     - etcd_discovery
 
