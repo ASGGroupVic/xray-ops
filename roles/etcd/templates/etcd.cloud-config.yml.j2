@@ -1,0 +1,11 @@
+  etcd:
+    addr: {{ public_addr }}:4001
+    bind-addr: 0.0.0.0
+    peer-addr: {{ peer_addr }}:7001
+    peer-heartbeat-interval: 250
+    peer-election-timeout: 1000
+    discovery: {{ etcd_discovery_url }}
+
+  units:
+    - name: etcd.service
+      command: start

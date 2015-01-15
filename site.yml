@@ -11,14 +11,11 @@
 - hosts: etcd_cluster
   vars:
     # need_bootstrap is registered by the coreos role.
-    new_cluster: "{{need_bootstrap.rc > 0}}"
+    # new_cluster: "{{need_bootstrap.rc > 0}}"
+    new_cluster: true
   roles:
     - etcd_discovery
-
-- hosts: etcd_cluster
-  roles:
-    - etcd
-
+  tasks:
 
 #
 # - hosts: k8s_cluster
@@ -32,3 +29,7 @@
 # - hosts: k8s_minions
 #   roles:
 #     - kubernetes_minion
+
+- hosts: cluster
+  roles:
+    - cloud-config

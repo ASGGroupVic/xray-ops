@@ -1,0 +1,7 @@
+---
+
+
+- name: Push cloud-config to remotes (with new discovery url)
+  template: src=cloud-config.yml.j2 dest={{coreos_cloud_config_path}}
+            group=core owner=core mode=0644
+  sudo: yes

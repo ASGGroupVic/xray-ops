@@ -7,4 +7,10 @@
   run_once: true
   local_action: uri url=https://discovery.etcd.io/new return_content=yes
   register: etcd_discovery_token
-  when: new_cluster==true and etcd_discovery_url==''
+  when: new_cluster==true and etcd_discovery_url==""
+
+- name: Configure etcd
+  set_fact:
+    etcd_public_addr: "{{ hostvars[ansible_hostname]['ansible_'+public_iface]['ipv4']['address'] }}"
+    etcd_peer_addr: "{{ hostvars[ansible_hostname]['ansible_'+private_iface]['ipv4']['address'] }}"
+    etcd_discovery_url: "{{ etcd_discovery_token.content|default('') }}"

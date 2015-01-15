@@ -17,4 +17,5 @@ ansible_ssh_user=core
 ansible_python_interpreter="PATH=/home/core/bin:$PATH python"
 
 coreos_cloud_config_path=/var/lib/coreos-vagrant/vagrantfile-user-data
-external_iface=eth1
+public_iface=eth1
+private_iface=eth0
