@@ -14,3 +14,8 @@
     etcd_public_addr: "{{ hostvars[ansible_hostname]['ansible_'+public_iface]['ipv4']['address'] }}"
     etcd_peer_addr: "{{ hostvars[ansible_hostname]['ansible_'+private_iface]['ipv4']['address'] }}"
     etcd_discovery_url: "{{ etcd_discovery_token.content|default('') }}"
+
+- name: Record etcd cluster started with discovery url
+  run_once: true
+  local_action: debug msg="The etcd service will be started with etcd_discovery_url {{etcd_discovery_url}}"
+  when: etcd_discovery_url!=''

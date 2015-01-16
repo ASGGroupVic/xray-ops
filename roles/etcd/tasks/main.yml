@@ -1,6 +1,0 @@
----
-
-- name: Record etcd cluster started with discovery url
-  run_once: true
-  local_action: debug msg="The etcd service will be started with etcd_discovery_url {{etcd_discovery_url}}"
-  when: etcd_discovery_url!=''
