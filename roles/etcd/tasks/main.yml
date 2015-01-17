@@ -1,5 +1,8 @@
 ---
 
+# - name: debug
+#   local_action: debug msg="new_cluster <{{new_cluster}}> etcd_discovery_url <{{etcd_discovery_url|default('undef')}}>"
+
 # Note: This is an external dependancy and requires HTTPS outbound for local and remote instances
 # We're assuming the if the cluster has been bootstrapped then a new
 # token for etcd is needed, unless an extra_var has been provided
@@ -7,13 +10,13 @@
   run_once: true
   local_action: uri url=https://discovery.etcd.io/new return_content=yes
   register: etcd_discovery_token
-  when: new_cluster==true and etcd_discovery_url==""
+  when: new_cluster and etcd_discovery_url is not defined
 
 - name: Configure etcd
   set_fact:
     etcd_public_addr: "{{ hostvars[ansible_hostname]['ansible_'+public_iface]['ipv4']['address'] }}"
     etcd_peer_addr: "{{ hostvars[ansible_hostname]['ansible_'+private_iface]['ipv4']['address'] }}"
-    etcd_discovery_url: "{{ etcd_discovery_token.content|default('') }}"
+    etcd_discovery_url: "{{ etcd_discovery_token.content|default(etcd_discovery_url|default('')) }}"
 
 - name: Fail if no discovery url
   run_once: true

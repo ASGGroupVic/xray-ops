@@ -1,3 +1,0 @@
----
-new_cluster: true
-etcd_discovery_url: ""
